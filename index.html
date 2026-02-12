@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valentine</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      color: white;
+      font-size: 2.4rem;
+      margin-bottom: 40px;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    .button-area {
+      position: relative;
+      width: 320px;
+      height: 140px;
+      margin: 0 auto;
+    }
+
+    button {
+      padding: 14px 30px;
+      font-size: 18px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #yes {
+      background-color: #ff4d6d;
+      color: white;
+      position: absolute;
+      left: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    #no {
+      background-color: #f1f1f1;
+      color: #333;
+      position: absolute;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      animation: pop 0.35s ease;
+      max-width: 300px;
+    }
+
+    .modal-content h2 {
+      color: #ff4d6d;
+      margin-bottom: 10px;
+    }
+
+    .modal-content img {
+      width: 220px;
+      border-radius: 15px;
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Will you be my Valentine Habibi?</h1>
+
+  <div class="button-area" id="area">
+    <button id="yes">Yes</button>
+    <button id="no">No</button>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h2>Yeayyy :') 💖</h2>
+    <p>I LOVE u bebe <3</p>
+    <img src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif">
+  </div>
+</div>
+
+<script>
+  const noBtn = document.getElementById("no");
+  const area = document.getElementById("area");
+  const yesBtn = document.getElementById("yes");
+  const modal = document.getElementById("modal");
+
+  // تابع تشخیص برخورد دو مستطیل
+  function isIntersecting(rect1, rect2) {
+    return !(
+      rect2.left > rect1.right ||
+      rect2.right < rect1.left ||
+      rect2.top > rect1.bottom ||
+      rect2.bottom < rect1.top
+    );
+  }
+
+  function moveNo() {
+    const areaRect = area.getBoundingClientRect();
+    const yesRect = yesBtn.getBoundingClientRect(); // موقعیت ثابت دکمه Yes
+
+    // 📏 افزایش محدوده حرکت (۸۰ پیکسل بیرون از باکس)
+    const extraRange = 80;
+    const minX = -extraRange;
+    const maxX = areaRect.width - noBtn.offsetWidth + extraRange;
+    const minY = -extraRange;
+    const maxY = areaRect.height - noBtn.offsetHeight + extraRange;
+
+    const maxAttempts = 50;
+    let placed = false;
+
+    for (let i = 0; i < maxAttempts; i++) {
+      // تولید موقعیت تصادفی در محدوده جدید
+      const x = Math.random() * (maxX - minX) + minX;
+      const y = Math.random() * (maxY - minY) + minY;
+
+      // اعمال موقعیت
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+      noBtn.style.right = "auto";
+      noBtn.style.transform = "none";
+
+      // بررسی برخورد با دکمه Yes
+      const newNoRect = noBtn.getBoundingClientRect();
+      if (!isIntersecting(newNoRect, yesRect)) {
+        placed = true;
+        break;
+      }
+    }
+
+    // اگر بعد از ۵۰ تلاش هنوز برخورد داره → ببرش یه گوشه امن
+    if (!placed) {
+      // امتحان گوشه‌ی پایین-راست
+      let fallbackX = areaRect.width - noBtn.offsetWidth - 10;
+      let fallbackY = areaRect.height - noBtn.offsetHeight - 10;
+      fallbackX = Math.max(0, fallbackX);
+      fallbackY = Math.max(0, fallbackY);
+
+      noBtn.style.left = fallbackX + "px";
+      noBtn.style.top = fallbackY + "px";
+      noBtn.style.right = "auto";
+      noBtn.style.transform = "none";
+
+      // باز هم بررسی کن؛ اگر بازم برخورد داره ببر بالا-چپ
+      const newNoRect = noBtn.getBoundingClientRect();
+      if (isIntersecting(newNoRect, yesBtn.getBoundingClientRect())) {
+        noBtn.style.left = "0px";
+        noBtn.style.top = "0px";
+        noBtn.style.right = "auto";
+        noBtn.style.transform = "none";
+      }
+    }
+  }
+
+  // رویدادها: موس و لمس
+  noBtn.addEventListener("mouseenter", moveNo);
+  noBtn.addEventListener("touchstart", moveNo);
+
+  // کلیک روی Yes
+  yesBtn.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+</script>
+
+</body>
+</html>
